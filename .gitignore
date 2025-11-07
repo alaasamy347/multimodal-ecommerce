@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.npy
+*.npz
+*.pt
+*.pth
+*.faiss
+*.tar
+*.rar
+*.zip
+*.glb
+*.obj
+*.mtl
+*.jpg
+*.png
+*.jpeg
+*.wav
+*.webm
+*.mp3
+*.mp4
+.env
+.env.local
+data/images/
+data/models/
+data/*.tar
+data/*.rar
+data/*.faiss
+data/*.npy
+
+# Node / Next.js
+node_modules/
+.next/
+dist/
+*.log
+
+# System
+.DS_Store
+Thumbs.db
