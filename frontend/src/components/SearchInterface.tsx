@@ -29,10 +29,14 @@ export default function SearchInterface() {
       form.append("top_k", "10");
       form.append("session_id", "default");
 
-      if (data.image) form.append("file", data.image);
+      // if (data.image) form.append("file", data.image);
       if (data.query) form.append("query", data.query);
 
-      res = await fetch("http://localhost:8000/search/intelligent", {
+      // Only append files if they exist
+      if (data.image) form.append("image", data.image);
+      if (data.audio) form.append("audio", data.audio);
+
+      res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/search/intelligent`, {
         method: "POST",
         body: form,
       });
