@@ -1,61 +1,12 @@
-Run the backend server => uvicorn main:app --reload --port 8000
-Run the frontend => npm run dev
-Run the preprocess_dataset file => python preprocess_dataset.py
-
 fastapi
-uvicorn  => Server to run fastapi
-python-multipart
-pillow
+uvicorn
 numpy
+scipy
+faiss-cpu # Or faiss-gpu if using a dedicated instance
 torch
-torchvision
 transformers
-faiss-cpu
-
-***
-The use of {create_index.py} file 
-****
-{create_index.py} is like building the map of your product space before you start driving around.
-Without it, your search engine would have to “re-draw the map” every single time a user searches.
-
-[create_index.py] (offline) → builds index.faiss + id_map.npy
-     ⬇
-[main.py API] (online) → loads saved index into memory
-     ⬇
-Search queries use the prebuilt index to find top matches in milliseconds
-
-/****************
-****Phase Two****
-****************/
-1- pip install openai-whisper  => Install Whisper (for speech-to-text)
-2- pip install torchaudio => Install Torch audio (for handling audio input)
-3- pip install transformers accelerate => For image captioning (if you want hybrid search: “find similar but in blue”)
-4- pip install soundfile librosa openai-whisper => It comes from Whisper’s load_audio, which internally uses ffmpeg to process audio files. On Windows, this means:
-
-
-===================================================================================================
-Your current implementation covers approximately 50-60% of the research methodology.
-
-Strengths:
-==========
-Excellent multimodal search foundation
-Good CLIP integration
-Clean, working interface
-Solid preprocessing pipeline
-
-Critical Gaps:
-==============
-AR Visualization - 0% complete (mentioned in methodology)
-Checkout Layer - 0% complete (in your architecture diagram)
-Advanced Models (LLaVA, CogVLM) - 0% complete (in methodology)
-Multi-image queries - 0% complete (methodology requirement)
-
-Recommendation: 
-===============
-Focus on AR visualization first (it's in your core architecture), 
-then checkout system. The advanced models can wait if time is limited, 
-but AR and checkout are non-negotiable based on your methodology document.
-
-
-
-
+Pillow
+requests
+python-dotenv
+google-genai # for the google.generativeai library
+openai # if you use the Whisper API
