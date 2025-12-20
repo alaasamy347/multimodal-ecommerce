@@ -671,7 +671,7 @@ def get_clip():
     return clip_model, clip_processor
 
 # Preload CLIP once at cold start
-get_clip()
+# get_clip()
 
 # ============================
 # UTILITY FUNCTIONS
