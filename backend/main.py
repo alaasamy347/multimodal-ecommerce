@@ -571,53 +571,142 @@
 #     # Use 0.0.0.0 for broader local network access
 #     uvicorn.run("main:app", host="0.0.0.0", port=8000)
 
+
 import os
 import json
 import tempfile
 from pathlib import Path
 from typing import Optional, List, Dict
-
-import faiss
 import numpy as np
 import torch
 import requests
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import CLIPProcessor, CLIPModel
 from PIL import Image
 from dotenv import load_dotenv
+import httpx
 
-# ============================
-# ENV
-# ============================
 load_dotenv(".env.local")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+KAGGLE_USERNAME = os.getenv("KAGGLE_USERNAME", "")
+KAGGLE_KEY = os.getenv("KAGGLE_KEY", "")
 
 # ============================
-# DATA PATHS (Serverless-friendly)
-# ============================
-TMP_DIR = "/tmp"
-DATA_IMAGES_DIR = os.path.join(TMP_DIR, "images")
-MODELS_DIR = os.path.join(TMP_DIR, "models")
-os.makedirs(DATA_IMAGES_DIR, exist_ok=True)
-os.makedirs(MODELS_DIR, exist_ok=True)
-
-IMAGE_INDEX_PATH = os.path.join(TMP_DIR, "image_index.faiss")
-TEXT_INDEX_PATH = os.path.join(TMP_DIR, "text_index.faiss")
-ID_MAP_PATH = os.path.join(TMP_DIR, "id_map.npy")
-CLEAN_PRODUCTS_PATH = os.path.join(TMP_DIR, "clean_products.json")
-
-# ============================
-# FASTAPI
+# LAZY LOADING SETUP
 # ============================
 app = FastAPI(title="Multimodal Search")
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.set_grad_enabled(False)
+device = torch.device("cpu")  # Force CPU for serverless
 
+# Global cache
+_clip_model = None
+_clip_processor = None
+_faiss = None
+_products = None
+_id_map = None
+_image_index = None
+_text_index = None
+
+# ============================
+# KAGGLE DATA LOADER
+# ============================
+def download_from_kaggle(dataset: str, filename: str, dest_path: str):
+    """Download file from Kaggle dataset"""
+    if os.path.exists(dest_path):
+        print(f"✅ {filename} already exists")
+        return True
+    
+    try:
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        api = KaggleApi()
+        api.authenticate()
+        
+        temp_dir = "/tmp/kaggle_download"
+        os.makedirs(temp_dir, exist_ok=True)
+        
+        api.dataset_download_file(
+            dataset=dataset,
+            file_name=filename,
+            path=temp_dir
+        )
+        
+        downloaded_file = os.path.join(temp_dir, filename)
+        if os.path.exists(downloaded_file):
+            os.rename(downloaded_file, dest_path)
+            print(f"✅ Downloaded {filename}")
+            return True
+        return False
+    except Exception as e:
+        print(f"❌ Kaggle download failed for {filename}: {e}")
+        return False
+
+def ensure_data_files():
+    """Lazy load data files from Kaggle only when needed"""
+    dataset = "alaasamy1/amazon-data2"  # UPDATE THIS
+    
+    files_to_download = {
+        "clean_products.json": "/tmp/clean_products.json",
+        "image_index.faiss": "/tmp/image_index.faiss",
+        "text_index.faiss": "/tmp/text_index.faiss",
+        "id_map.npy": "/tmp/id_map.npy"
+    }
+    
+    for filename, dest in files_to_download.items():
+        if not os.path.exists(dest):
+            download_from_kaggle(dataset, filename, dest)
+
+# ============================
+# LAZY LOADERS
+# ============================
+def get_faiss():
+    global _faiss
+    if _faiss is None:
+        import faiss
+        _faiss = faiss
+    return _faiss
+
+def get_products():
+    global _products
+    if _products is None:
+        ensure_data_files()
+        with open("/tmp/clean_products.json", "r") as f:
+            _products = {int(p["id"]): p for p in json.load(f)}
+        print(f"✅ Loaded {len(_products)} products")
+    return _products
+
+def get_id_map():
+    global _id_map
+    if _id_map is None:
+        ensure_data_files()
+        _id_map = np.load("/tmp/id_map.npy")
+    return _id_map
+
+def get_indexes():
+    global _image_index, _text_index
+    if _image_index is None or _text_index is None:
+        ensure_data_files()
+        faiss = get_faiss()
+        _image_index = faiss.read_index("/tmp/image_index.faiss")
+        _text_index = faiss.read_index("/tmp/text_index.faiss")
+    return _image_index, _text_index
+
+def get_clip():
+    global _clip_model, _clip_processor
+    if _clip_model is None:
+        from transformers import CLIPProcessor, CLIPModel
+        print("🔠 Loading CLIP model...")
+        _clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
+        _clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+        _clip_model.eval()
+    return _clip_model, _clip_processor
+
+# ============================
+# CORS
+# ============================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -627,60 +716,8 @@ app.add_middleware(
 )
 
 # ============================
-# SAFE LOADERS
-# ============================
-def safe_load_faiss(path):
-    if os.path.exists(path):
-        return faiss.read_index(path)
-    print(f"⚠️ FAISS not found: {path}")
-    return None
-
-def safe_load_npy(path):
-    if os.path.exists(path):
-        return np.load(path)
-    print(f"⚠️ NPY not found: {path}")
-    return None
-
-def safe_load_json(path):
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            return {int(p["id"]): p for p in json.load(f)}
-    print(f"⚠️ JSON not found: {path}")
-    return {}
-
-# ============================
-# LOAD INDEXES + DATA
-# ============================
-image_index = safe_load_faiss(IMAGE_INDEX_PATH)
-text_index = safe_load_faiss(TEXT_INDEX_PATH)
-id_map = safe_load_npy(ID_MAP_PATH)
-products = safe_load_json(CLEAN_PRODUCTS_PATH)
-
-# ============================
-# CLIP MODEL
-# ============================
-clip_model = None
-clip_processor = None
-
-def get_clip():
-    global clip_model, clip_processor
-    if clip_model is None:
-        clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
-        clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-        clip_model.eval()
-    return clip_model, clip_processor
-
-# Preload CLIP once at cold start
-# get_clip()
-
-# ============================
 # UTILITY FUNCTIONS
 # ============================
-COMMON_COLORS = [
-    "red", "blue", "green", "yellow", "black", "white", "brown", "grey", "pink",
-    "purple", "orange", "beige", "navy", "burgundy", "maroon", "tan"
-]
-
 def detect_color_from_image(image_path: str) -> Optional[str]:
     try:
         img = Image.open(image_path).convert('RGB').resize((100, 100))
@@ -706,7 +743,9 @@ def cosine_to_percent(score):
     return float((score + 1.0)/2.0)
 
 def search_with_embedding(embedding, index, k=20, color_filter=None):
-    if index is None or id_map is None: return []
+    id_map = get_id_map()
+    products = get_products()
+    
     distances, indices = index.search(embedding, k*5)
     results=[]
     for dist, idx in zip(distances[0], indices[0]):
@@ -716,7 +755,15 @@ def search_with_embedding(embedding, index, k=20, color_filter=None):
         if not p: continue
         score = cosine_to_percent(dist)
         if color_filter and not product_matches_color(p,color_filter): continue
-        results.append({"id":product_id,"name":p.get("productDisplayName"),"category":p.get("masterCategory"),"subCategory":p.get("subCategory"),"image":p.get("image_path"),"color":p.get("color"),"score":score})
+        results.append({
+            "id":product_id,
+            "name":p.get("productDisplayName"),
+            "category":p.get("masterCategory"),
+            "subCategory":p.get("subCategory"),
+            "image":p.get("image_path"),
+            "color":p.get("color"),
+            "score":score
+        })
         if len(results)>=k*2: break
     return sorted(results,key=lambda x:x["score"],reverse=True)[:k]
 
@@ -724,55 +771,79 @@ def search_with_embedding(embedding, index, k=20, color_filter=None):
 # SEARCH ENDPOINT
 # ============================
 @app.post("/search/intelligent")
-async def intelligent_search(query: str = Form(""), image: UploadFile = File(None), top_k: int = Form(10)):
-    modality_embeddings=[]
-    color_filter=None
-    
-    # IMAGE EMBEDDING
-    if image:
-        tmp_img = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
-        tmp_img.write(await image.read())
-        tmp_img.close()
+async def intelligent_search(
+    query: str = Form(""), 
+    image: UploadFile = File(None), 
+    top_k: int = Form(10)
+):
+    try:
+        modality_embeddings=[]
+        color_filter=None
+        
+        # Load CLIP only when needed
         clip_model, clip_processor = get_clip()
-        with torch.no_grad():
-            pil_img = Image.open(tmp_img.name).convert("RGB")
-            inputs = clip_processor(images=pil_img, return_tensors="pt").to(device)
-            img_emb = clip_model.get_image_features(**inputs)
-            img_emb = img_emb.cpu().numpy()
-            img_emb /= np.linalg.norm(img_emb, axis=1, keepdims=True)
-        modality_embeddings.append(img_emb[0])
-        color_filter = detect_color_from_image(tmp_img.name)
-        os.remove(tmp_img.name)
+        
+        # IMAGE EMBEDDING
+        if image:
+            tmp_img = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+            tmp_img.write(await image.read())
+            tmp_img.close()
+            
+            with torch.no_grad():
+                pil_img = Image.open(tmp_img.name).convert("RGB")
+                inputs = clip_processor(images=pil_img, return_tensors="pt").to(device)
+                img_emb = clip_model.get_image_features(**inputs)
+                img_emb = img_emb.cpu().numpy()
+                img_emb /= np.linalg.norm(img_emb, axis=1, keepdims=True)
+            
+            modality_embeddings.append(img_emb[0])
+            color_filter = detect_color_from_image(tmp_img.name)
+            os.remove(tmp_img.name)
+        
+        # TEXT EMBEDDING
+        if query.strip():
+            with torch.no_grad():
+                txt_inputs = clip_processor(
+                    text=[query], 
+                    return_tensors="pt", 
+                    padding=True, 
+                    truncation=True
+                ).to(device)
+                txt_emb = clip_model.get_text_features(**txt_inputs)
+                txt_emb = txt_emb.cpu().numpy()
+                txt_emb /= np.linalg.norm(txt_emb, axis=1, keepdims=True)
+            modality_embeddings.append(txt_emb[0])
+        
+        if not modality_embeddings:
+            return JSONResponse(status_code=400, content={"error":"No input provided"})
+        
+        # Combine embeddings
+        final_embedding = np.mean(modality_embeddings, axis=0, keepdims=True)
+        final_embedding /= np.linalg.norm(final_embedding, axis=1, keepdims=True)
+        final_embedding = final_embedding.astype("float32")
+        
+        # Load indexes only when needed
+        image_index, text_index = get_indexes()
+        index = image_index if image and not query else text_index
+        
+        results = search_with_embedding(final_embedding, index, k=top_k, color_filter=color_filter)
+        
+        return {
+            "query": query,
+            "interpreted_query": query,
+            "accurate_results": results,
+            "related_results": [],
+            "color_filter": color_filter
+        }
     
-    # TEXT EMBEDDING
-    if query.strip():
-        clip_model, clip_processor = get_clip()
-        with torch.no_grad():
-            txt_inputs = clip_processor(text=[query], return_tensors="pt", padding=True, truncation=True).to(device)
-            txt_emb = clip_model.get_text_features(**txt_inputs)
-            txt_emb = txt_emb.cpu().numpy()
-            txt_emb /= np.linalg.norm(txt_emb, axis=1, keepdims=True)
-        modality_embeddings.append(txt_emb[0])
-    
-    if not modality_embeddings:
-        return JSONResponse(status_code=400, content={"error":"No input provided"})
-    
-    final_embedding = np.mean(modality_embeddings, axis=0, keepdims=True)
-    final_embedding /= np.linalg.norm(final_embedding, axis=1, keepdims=True)
-    final_embedding = final_embedding.astype("float32")
-    
-    index = image_index if image and not query else text_index
-    results = search_with_embedding(final_embedding, index, k=top_k, color_filter=color_filter)
-    
-    return {
-        "query": query,
-        "interpreted_query": query,
-        "accurate_results": results,
-        "related_results": [],
-        "color_filter": color_filter
-    }
+    except Exception as e:
+        print(f"❌ Search error: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.get("/")
 def root():
     return {"message":"Multimodal Search API Ready"}
 
+@app.get("/health")
+def health():
+    return {"status": "healthy", "kaggle_configured": bool(KAGGLE_USERNAME and KAGGLE_KEY)}
