@@ -203,7 +203,7 @@ export function ARViewer({ productId, productName, onClose }: ARViewerProps) {
     console.log("🔍 Fetching AR info for product:", productId);
     
     // Fetch AR info
-    fetch(`http://localhost:8000/products/${productId}/ar-info`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${productId}/ar-info`)
       .then(res => {
         console.log("📡 AR info response status:", res.status);
         if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch AR info`);
