@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+numpy
+scipy
+faiss-cpu # Or faiss-gpu if using a dedicated instance
+torch
+transformers
+Pillow
+requests
+python-dotenv
+google-genai # for the google.generativeai library
+openai # if you use the Whisper API
+
+
+venv\Scripts\activate
+python -m uvicorn main:app --reload --port 8000

@@ -1,0 +1,38 @@
+# --- General / OS ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- Environment Secrets ---
+.env
+.env.local
+.env*.local
+
+# --- Backend (Python) ---
+backend/__pycache__/
+backend/venv/
+backend/venv310/
+backend/env/
+*.py[cod]
+
+# --- Backend Data (Large Files) ---
+# This ignores the specific data folder you mentioned
+backend/data/
+# General large file types
+*.faiss
+*.npy
+*.jpg
+*.jpeg
+*.png
+*.glb
+*.obj
+
+# --- Frontend (Node.js) ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# --- Logs ---
+*.log
+npm-debug.log*
