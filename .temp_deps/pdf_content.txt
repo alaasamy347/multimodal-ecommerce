@@ -1,0 +1,446 @@
+1  
+  
+  
+  
+  
+Faculty of business  
+Department of Information Systems and Computers   
+Protocol for M. Sc. Degree  
+In Management Information Systems  
+Academic Year 2024-2025  
+Candidate Name: Alaa Samy Mohamed Mohamed Abd Elkawy 
+Title in English:  
+---------------------------------  
+Unified Multimodal Architecture for Enhanced E-Commerce 
+Product Discovery 
+---------------------------------  
+العنوان باللغة العربية  
+هندسة الأساليب المتعددة الموحدة لتعزيز اكتشاف منتجات التجارة الإلتتونيية  
+ --------------------------------- 
+  
+Under the Supervision of  
+ 
+Associate prof. Abeer Amer   
+Computer Science & Information 
+System Department, Faculty of 
+Management Science, Sadat 
+Academy for Management & 
+Sciences. 
+Prof. Ghada Elkhayat 
+Head of Department of Information 
+System & Computers, Faculty of 
+Business, Alexandria University. 
+ 
+  
+  
+2  
+  
+  
+Table of Contents  
+1. Introduction ............................................................................................................ 3 
+2. Research Problem .................................................................................................. 4 
+3. Research Objectives ............................................................................................... 5 
+4. Research Importance.............................................................................................. 6 
+5. Research Limitations ............................................................................................. 7 
+6. Literature Review .................................................................................................. 7 
+7. Research Methodology ........................................................................................ 12 
+7.1. System Architecture Design and Data Sources: ............................................... 12 
+7.2. Multimodal Model Selection and Integration:............................................... 15 
+8. Research Plan. ...................................................................................................... 16 
+9. References ............................................................................................................ 17 
+ 
+   
+  
+ 
+  
+  
+ 
+ 
+ 3  
+  
+1. Introduction  
+Electronic commerce (E -commerce) apps are pla tforms that is used so the user 
+can buy and sell products [ 1], the rise of e -commerce and web apps has made 
+recommender systems a key part of our daily lives, suggesting personalized items 
+based on user preferences [2], Traditional systems, are limited by the data they have 
+available, typically just a user's browsing history or past purchases. This restricts 
+them to recommending products that are similar to what the user has already 
+interacted with [3], and it is also may not universally cater to all users, and in some 
+cases, could evoke resistance, creating a sense of aversion among users [4] 
+Large language models (LLMs) like ChatGPT and GPT -4 are further 
+revolutionizing NLP and AI with their ability to underst and and generate human 
+language [2], this LLMs received considerable attention due to their capabilities and 
+their great achievements in many fields [5], they are also impacting online shopping, 
+as customers rely more on LLMs for quick and informed purchase decisions [3]. 
+Traditional recommender systems focus on analyzing user behavior data, but 
+combining LLM with recommender systems can become revolutionary, the 
+combination can help in understanding explicit feedback from users, and understand 
+their needs a nd preferences, it will also help in improving the accuracy and 
+satisfaction of recommender systems [6]. 
+Multimodal Large Language Models (MLLMs) are highly effective in tasks like 
+visual question answering and understanding.  The success of Large Language 
+Models has led to efforts to combine them with other modalities for improved 
+performance, as seen in models like GPT-4V and Gemini [7]. 
+Augmented Reality (AR) is playing a significant role in the evolution of online 
+shopping. Retailers are increasingly ado pting AR to enhance the virtual shopping 
+experience, making it more fun, effective, and enjoyable. Brands like Timberland, 4  
+  
+Sephora, and Topshop have integrated AR into their mobile apps, allowing 
+consumers to virtually try on products  [8], it also improves sensory experiences by 
+adding virtual elements into real time environment [15] 
+Visuals and text are important for decision -making, highlighting the need for 
+systems that integrate various data streams for better personalization.  Users often 
+need different  information systems, like e -commerce platforms with search and 
+recommendation features, to improve their experience [16] 
+This research combines physical and digital shopping, offering personalized 
+product suggestions and AR experiences to enhance decision -making and support 
+retailer growth, it also explores  the technical foundation, user acceptance, and 
+potential industry impact of this novel approach. 
+2. Research Problem 
+E-commerce platforms have traditionally relied on conventional text-based search 
+methods, making it challenging for users to find products that match their visual 
+preferences or complex requirements. While some platforms offer visual search or 
+AR previews independently, there is a significant gap in integrating these 
+technologies into a un ified, intuitive shopping experience. The lack of seamless 
+integration between natural language understanding, visual search, and AR 
+visualization often leads to fragmented user experiences and reduced shopping 
+effectiveness. 
+This research addresses this l imitation by proposing an innovative unified 
+architecture that combines multimodal language models, visual search capabilities, 
+and AR technology.  
+The proposed solution aims to create a more intuitive and immersive e-commerce 
+experience through: 5  
+  
+1. Integration of multimodal language models to process and understand both 
+text and image inputs, enabling more natural and context -aware product 
+search  
+2. Implementation of advanced visual search capabilities that allow users to 
+find products based on visual similarities and attributes  
+3. Incorporation of AR technology for real -time product visualization, 
+enabling users to preview products in their intended environment  
+4. Development of a seamless workflow from search to purchase, enhancing 
+the overall shopping experience 
+The significance of this research lies in: 
+ Creating a more natural and intuitive shopping experience that aligns with 
+how users naturally think about and search for products 
+ Reducing the gap between online product discovery and real -world 
+visualization 
+ Improving purchase confidence through immersive product previews 
+ Enhancing user satisfaction by providing multiple input modalities for 
+product search 
+ 
+3. Research Objectives 
+This research aims to enhance the user experience and also contributes 
+valuable insights to the fields AI, and e-commerce by:  
+• Improve user experience: The primary objective of the research is to improve 
+the overall user experience in an e -commerce application by integrating visual 
+search, image generation, and augmented reality technologies. This will enable 
+users to easily search for products, visualize them in their environment, and make 
+informed purchasing decisions. 6  
+  
+• Increase conversion rates: The research aims to increase conversion rates in an 
+e-commerce application by guiding users through the checkout flow and making 
+it easier for them to add items to their cart.  
+• Improving accuracy and relevance: The research aims to improve the accuracy 
+and relevance of product recommendations and search results by using visual 
+search, image generation, and augmented reality technologies. 
+• Elevate user satisfaction: The research aims to evaluate user satisfaction with 
+the integrated visual search, image generation, and augmented reality 
+technologies in an e-commerce application.  
+4. Research Importance 
+4.1 Scientific Importance  
+This research has significant scientific importance in Computer Science 
+and Human -Computer Interaction (HCI) by: advancing understanding of 
+integrating different modalities (text, image, AR); developing new approache s 
+for cross -modal information processing and combining AI technologies; 
+contributing to multimodal language models and visual search optimization in 
+AI and Machine Learning; studying user interaction with multimodal search 
+interfaces; investigating the imp act of AR on purchase decisions; improving 
+product discovery systems and understanding immersive technologies in e -
+commerce. 
+4.2 Theoretical Importance 
+This research challenges and extends existing theoretical frameworks by 
+moving beyond traditional single-modal interaction models and proposing new 
+frameworks for understanding multimodal user engagement.  It explores the 
+relationship between visual and textual information processing in e -7  
+  
+commerce. Additionally, the research extends existing models in i nformation 
+retrieval theory to incorporate multiple input modalities, develops new 
+theoretical approaches to cross -modal search relevance, and advances 
+understanding of how users formulate multimodal queries.  In terms of Human-
+AI Interaction, the research challenges conventional assumptions about search 
+interfaces, explores new paradigms for human -AI collaboration in shopping 
+contexts, and contributes to understanding how users trust and interact with AI-
+powered systems. Lastly, in the realm of Immersive Co mputing, the research 
+advances theoretical understanding of AR in commercial applications, develops 
+frameworks for integrating real and virtual product experiences, and contributes 
+to theories of spatial computing in e-commerce.  
+5. Research Limitations 
+One of the primary limitations is the dataset used for training and evaluation. 
+The availability of a large and diverse dataset is crucial for training LLM models 
+effectively.  
+6. Literature Review 
+(Y. Jin et al., 2023) the paper presents a novel multi-modal foundation 
+model called ECLIP, designed for large -scale applications in E -commerce. 
+Recognizing the limitations of existing vision-language pre-training methods 
+when applied to E-commerce due to the distinct nature of product images, the 
+authors propose an instance-centric pre-training paradigm. ECLIP features a 
+decoder architecture that utilizes learnable instance queries to capture 
+instance-level semantics effectively. Additionally, it introduces two specially 
+designed pretext tasks that allow the model to focus on specific product 
+instances without the need for costly manual annotations. Trained on a dataset 
+of 100 million E-commerce-related items, ECLIP demonstrates the ability to 8  
+  
+extract more generic, semantic-rich, and robust representations. Experimental 
+results indicate that ECLIP significantly outperforms existing methods across 
+various downstream tasks, showcasing its strong transferability to real -world 
+E-commerce applications. Overall, the framework emphasizes learning 
+instance-level representations through innovative architecture and pre-training 
+tasks, highlighting its superior generalization capabilities [9] 
+(B. Xu et al., 2024) this paper introduces Mind, a framework enhancing 
+purchase intention understanding in E -commerce. Mind uses Large Vision-
+Language Models to infer intentions from product metadata and human 
+insights, creating a database of 1.  2 million intentions.  Human evaluations 
+confirm validity and usefulness, showing improved intention 
+comprehension. Mind automates intention gener ation and filtering, proving 
+superior to previous methods. This approach advances E-commerce intention 
+acquisition and application, benefiting student models in comprehension tasks 
+[10]. 
+(Z. Hu et al., 2024) introduces Multi-Modal Learning with online Token 
+Pruning (MML-TP) as a new method to improve vision-language transformer 
+models for e -commerce product searches.  It addresses the challenge of 
+aligning non -visual descriptive text attributes in product descriptions with 
+visual data.  MML-TP uses token pruning to clean text during training, 
+enhancing the paired image branch.  Testing on 710,000 Amazon products 
+showed that refining text tokens boosts visual search performance.  This 
+approach enhances image-text alignment, strengthening the vision encoder for 
+more efficient e-commerce models compatible with various existing models  
+[11] 9  
+  
+(H. Chen, et al., 2024) this paper introduces the Visual Construction 
+Safety Query (VCSQ) system, aiming to boost situational awareness in 
+construction sites to prevent acciden ts. VCSQ combines Image Captioning 
+(IC), Visual Question Answering (VQA), and Image -Text Retrieval (ITR) 
+using Augmented Reality (AR) headsets. Results showed high recall rates for 
+ITR, 89. 7% accuracy for VQA, and 0.  449 SPICE score for IC.  Feasibility 
+tests confirmed practical benefits, especially for safety in construction.  The 
+system integrates IC, VQA, and ITR to create an interactive interface for 
+workers and management to improve safety and efficiency.  Future 
+improvements include refining responses w ith a prompt -tuning strategy, 
+integrating safety regulations, and focusing on user adoption and training 
+modules [12]. 
+(J. Bi, et al., 2023) discusses combining large language models (LLMs) 
+with augmented reality (AR) to enhance human -computer interaction by 
+integrating visual, auditory, and linguistic elements.  By incorporating LLMs 
+into AR, task performance can be quantified more effectively, improving state 
+estimation and creating more adaptive AR systems. Experimental results show 
+promise for advancing AR applications with this integrated approach, 
+particularly in improving video caption quality and text -based scene 
+understanding for users [13] 
+(D. Stover, 2024) this  paper introduces a new method for augmented 
+reality task guidance systems, addressing the shortcomings of current systems 
+that rely on expert input or are limited to specific tasks and environments. The 
+proposed approach allows operators to take photos of objects and write task 
+instructions in natural language, which the system converts into guidance 
+visuals. The system, TAGGAR, uses machine learning models for 
+understanding language and locating objects.  A user study showed that 10  
+  
+operators could easily create clear instructions, and end users could follow the 
+guidance visuals accurately 85.  7% of the time, even without prior 
+knowledge. TAGGAR provides a versatile solution for generating guidance 
+in various settings, surpassing current limitations in AR systems [14] 
+(J. Ji, et al., 2023) This paper proposes a method for building 
+recommender systems that leverage Large Language Models (LLMs) to 
+generate recommendations directly as textual descriptions, by collecting user-
+product interaction data like purchase history, browsing behavior, and 
+potentially product reviews, GenRec utilizes a pre-trained LLM, potentially a 
+model like BERT or GPT-3, for recommendation generation, this LLM is fine-
+tuned on the prepared user -product data. This helps the LLM understand the 
+relationships between user preferences, product features, and the language 
+used to describe them [3] 
+(T. Wei, et al., 2024) The paper presents a Unified paradigm for Multi-
+modal Personalization systems (UniMP) that combines different data types 
+like images and text to improve user experience in tasks like recommendation 
+and search, it u ses a flexible generative framework to analyze multi -modal 
+user history for precise predictions and customized outputs, it features a 
+thorough benchmark for assessing multi-modal personalized tasks, confirming 
+its effectiveness for various user needs [16]. 
+(Z. Li, et al., 2024) this paper presents UnifiedMLLM, a multi -modal 
+large language model designed to unify the handling of diverse tasks across 
+multiple modalities. UnifiedMLLM introduces task tokens and grounding 
+tokens to represent task types and regio ns, enabling seamless integration of 
+tasks through a task router and expert models. The system combines image, 
+video, and audio encoders with a shared embedding space, supported by a 11  
+  
+three-stage training strategy to enhance perception, reasoning, and task 
+execution. Experimental results demonstrated strong generalization and 
+scalability, with superior performance across benchmarks such as image 
+segmentation, reasoning -based editing, and multi -modal generation tasks. 
+Future work focuses on end -to-end system design and improvements for 
+handling interleaved multi-modal inputs [17] 
+ (S. Hewawalpita, & I. Perera, 2019) presents a multimodal interaction 
+framework for e -commerce that integrates three distinct interaction modes: 
+speech inputs, interactive 3D visuali zations, and gesture controls. The 
+framework implements speech recognition through Web Speech API for 
+voice-based product searching, while 3D product presentations are created 
+using multiple -angle product photographs to enable 360 -degree viewing. 
+Gesture interactions are supported through both webcam -based recognition 
+and Leap Motion device tracking. Built on the CodeIgniter MVC architecture, 
+the framework separates server -side e-commerce functionalities from client -
+side multimodal interactions, enabling se amless integration through 
+interaction handlers and e -commerce context management. The system was 
+evaluated through user studies, demonstrating improved product engagement 
+and user experience, though revealing some cultural and technical challenges 
+in multimodal adoption. Future work focuses on virtual reality integration and 
+accessibility improvements [18]. 
+(J. Chen et al., 2023) this paper presents MiniGPT-v2, a novel vision-
+language model designed for efficient and effective multi -modal 
+understanding. MiniGPT-v2 leverages a streamlined architecture comprising 
+a Vision Transformer (ViT) encoder, a linear projection layer, and the 
+powerful LLaMA -2 language model. By efficiently processing high -
+resolution images (448x448) and mapping visual features into the  language 12  
+  
+model's space, MiniGPT -v2 excels in various vision -language tasks, 
+MiniGPT-v2's training follows a three -stage approach. Initial pretraining 
+utilizes a diverse mix of weakly-labeled and fine-grained image-text datasets. 
+Subsequent multi -task fine -tuning refines performance on specific tasks. 
+Finally, instruction tuning incorporates multi -modal instruction datasets and 
+language-only datasets to enhance generalization and robustness, MiniGPT -
+v2 demonstrates strong performance across a range of visio n-language 
+benchmarks, including visual question answering, referring expression 
+comprehension, and grounded image captioning [19]  
+ 
+7. Research Methodology  
+7.1. System Architecture Design and Data Sources: 
+7.1.1. Platform Selection and Analysis: 
+ Evaluate existing e -commerce platforms (e.g., Amazon, Shopify) for 
+integration possibilities or creating a new testing website. 
+ Assess requirements for developing a custom testing platform. 
+ Determine technical constraints and integration capabilities of chosen 
+platform. 
+7.1.2. System Architecture Overview: 13  
+  
+ 
+The MULTIVIEW Unified architecture consists of four primary layers 
+that work together to create a seamless e-commerce experience: 
+1. User Input Layer  
+ Supports multiple input modalities:  
+o Text queries for traditional keyword-based search 
+o Image queries for visual product matching 
+o Audio queries for voice-based interactions 
+ Enables natural and flexible user interaction methods 
+ 14  
+  
+2. Multimodal Processing Layer  
+ Comprises sophisticated AI components:  
+o LLM Model for processing textual inputs 
+o Vision Model for image analysis 
+o Speech-to-Text processing for audio conversion 
+o Unified Understanding Engine that integrates all inputs 
+ Creates a cohesive understanding of user intent across modalities 
+ 
+3. AR Visualization Layer  
+ Enables users to visualize products in their real environment 
+ 
+4. Checkout Layer  
+ Streamlines the purchase process through:  
+o Efficient Payment Processing 
+o Immediate Order Confirmation 
+ Ensures a smooth transition from product discovery to purchase 
+This unified architecture addresses the core research objectives by: 
+ Facilitating natural multimodal interaction 
+ Enabling seamless integration of physical and digital shopping experiences 
+ Supporting real-time visualization of products 
+ Streamlining the purchase process 
+7.1.3. Data Collection and Management: 
+ Gather multimodal training data including  (product images with detailed 
+descriptions - image-text paired data - visual attribute annotations - Product 
+category hierarchies). 15  
+  
+ Implement multimodal preprocessing pipeline  for ( image preprocessing 
+for model compatibility  - text tokenization and encoding  - data 
+augmentation techniques). 
+ 
+7.2. Multimodal Model Selection and Integration: 
+7.2.1. Multimodal Model Implementation: 
+ Select and implement base multimodal model  like: C LIP for visual -
+semantic embeddings , LLaVA for detailed visual understanding and 
+CogVLM for complex visual reasoning, etc. 
+ Design model pipeline includes input handling for images or text, cross -
+modal feature extraction, multimodal fusion strategy, and output 
+generation.  
+7.2.2. Visual Search Integration: 
+ Create visual search using multiple features, including unified 
+embeddings, incorporate similarity computation, efficient indexing, and a 
+ranking algorithm in the design. 
+ Develop a hybrid search system that integrates text and visual queries, the 
+system should give importance to various types of information and be able 
+to handle queries that consist of multiple images.  
+7.2.3. AR Visualization Integration: 
+ Implement AR visualization and connect it with the multimodal system 
+ 16  
+  
+ 
+8. Research Plan.  
+The research plan of this research will be organized as follows:  
+Chapter One- Introduction.  
+Chapter Two- Literature Review.  
+Chapter Three- will discuss the methodological approaches used in the 
+research. This chapter will also handle the proposed approach and system 
+design and architecture.  
+Chapter Four - will elaborate on the implementation and evaluation of the 
+developed system.  
+Chapter Five- will finally shed light on the concluded results of the research 
+accompanied by future recommendations.  
+     17  
+  
+9. References  
+  
+[1] Y. Lui, & Z. Ding, “Personalized recommendation model of electronic commerce in new 
+media era based on semantic emotion analysis”, 2022,  Frontiers in psychology, 13, 952622, 
+https://doi.org/10.3389/fpsyg.2022.952622. 
+[2] Z. Zhao, W. Fan, and J. Li et al., "Recommender Systems in the Era of Large Language 
+Models (LLMs)", arXiv:2307.02046, 2024. 
+[3] J. Ji et al., “GenRec: Large Language Model for Generative Recommendation”, 2023, 
+arXiv:2307.00457v2. 
+[4] G. Lee, & W. J.  Lee, “Psychological reactance to online recommendation services”, 
+2009, Information & Management, 46(8), 448-452. 
+[5] H. Zhou, et al., “Large Language Model (LLM) for Telecommunications: A Comprehensive 
+Survey on Principles, Key Techniques, and Opportunities”, 2024, 2405.10825, 
+https://arxiv.org/abs/2405.10825 
+[6] X. Wang, et al.,  “LLM-Enhanced User-Item Interactions: Leveraging Edge Information for 
+Optimized Recommendations”, 2024, 2402.09617, https://arxiv.org/abs/2402.09617 
+[7] Y. Jin, J. Li, et al., “Efficient Multimodal Large Language Models: A Survey”, 2024, 
+https://arxiv.org/abs/2405.10739 
+[8] J.H. Kim, M. Kim, M. Park & J. Yoo, “Immersive interactive technologies and virtual 
+shopping experiences: Differences in consumer perceptions between augmented reality (AR) 
+and virtual reality (VR)”, 2023, Elsevier, https://doi.org/10.1016/j.tele.2022.101936 
+[9] Y. Jin, Y. Li, Z. Yuan and Y. Mu, “Learning Instance-Level Representation for Large-Scale 
+Multi-Modal Pre-training in E-commerce”, 2023, arxiv.org/abs/2304.02853 
+[10] B. Xu, W. Wang, et al., “Mind: Multimodal Shopping Intention Distillation from Large 
+Vision-language Models for E -commerce Purchase Unders tanding”, 2024, 
+arXiv:2406.10701v1 
+[11] Hu, S. Li, M. Du, A. Dhua and D. Gray, “Multimodal learning with online text cleaning for 
+e-commerce product search”, 2024, SIGIR 2024 Workshop on eCommerce 
+[12] H. Chen, L. Hou, et al., “Augmented reality, deep learning and vision-language query system 
+for construction worker safety”, 2024, https://doi.org/10.1016/j.autcon.2023.105158 
+[13] J. Bi, N. Manh, et al., “MISAR: A Multimodal Instructional System with Augmented Reality”, 
+2023, https://arxiv.org/abs/2310.11699 18  
+  
+[14] D. Stover, D. Bowman, “TAGGAR: General-Purpose Task Guidance from Natural Language 
+in Augmented  Reality using Vision -Language Models”, 2024, 
+https://doi.org/10.1145/3677386.3682095 
+[15] A. Watson, B. Alexander, L. Salavati , “T he impact of experiential augmented reality 
+applications on fashion purchase intention”,  2020, International Journal of Retail & 
+Distribution Management, 10.1108/IJRDM-06-2017-0117 
+[16] T. Wei, B. Jin & R. Li, et al., “Towards Unified Multi-Modal Personalization: Large Vision-
+Language Models for Generative Recommendation and Beyond”, 2024, arXiv:2403.10667v1 
+[17] Z. Li et a l., "UnifiedMLLM: Enabling Unified Representation for Multi -modal Multi-tasks 
+With Large Language Model", 2024, arXiv, Available: https://arxiv.org/abs/2408.02503. 
+[18] S. Hewawalpita, & I.  Perera, “Multimodal User Interaction Framework for E -Commerce”, 
+2019, In 2019 International Conference on Software Engineering and Computer Systems 
+(SCSE). DOI: 10.23919/SCSE.2019.8842815 
+[19] J. Chen, D. Zhu, X. Shen, X. Li, et al., “MiniGPT-v2: Large Language Model A s a Unified 
+Interface for Vision-Language Multi-task Learning”, 2023, arXiv preprint arXiv:2310.09478, 
+https://arxiv.org/abs/2310.09478 
+ 

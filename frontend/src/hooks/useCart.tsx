@@ -15,12 +15,13 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Omit<CartItem, "quantity" | "price">) => void;
+  addItem: (product: Omit<CartItem, "quantity" | "price">) => Promise<void>;
   removeItem: (id: number) => void;
   updateQty: (id: number, qty: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  sessionId: string;
 }
 
 const CartContext = createContext<CartContextType | null>(null);
@@ -35,8 +36,20 @@ function priceFromId(id: number) {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [sessionId] = useState(() => `session-${Date.now()}`);
 
-  const addItem = useCallback((product: Omit<CartItem, "quantity" | "price">) => {
+  const addItem = useCallback(async (product: Omit<CartItem, "quantity" | "price">) => {
+    // 1. Sync with backend
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      await fetch(`${apiUrl}/checkout/cart/add/${product.id}?session_id=${sessionId}`, {
+        method: "POST"
+      });
+    } catch (err) {
+      console.error("Failed to sync cart item to backend", err);
+    }
+
+    // 2. Update local state
     setItems((prev) => {
       const existing = prev.find((i) => i.id === product.id);
       if (existing) {
@@ -49,7 +62,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         { ...product, quantity: 1, price: priceFromId(product.id) },
       ];
     });
-  }, []);
+  }, [sessionId]);
 
   const removeItem = useCallback((id: number) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
@@ -83,6 +96,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         totalItems,
         totalPrice,
+        sessionId
       }}
     >
       {children}

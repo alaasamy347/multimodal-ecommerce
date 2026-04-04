@@ -1,253 +1,3 @@
-// "use client";
-
-// import { useState, useRef } from "react";
-
-// export function UnifiedSearchInput({ onSearch, loading }: any) {
-//   const [query, setQuery] = useState("");
-//   const [imageFile, setImageFile] = useState<File | null>(null);
-//   const [audioFile, setAudioFile] = useState<File | null>(null);
-//   const [recording, setRecording] = useState(false);
-//   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-//   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-//   const audioChunksRef = useRef<Blob[]>([]);
-//   const fileInputRef = useRef<HTMLInputElement>(null);
-
-//   // ── Voice Recording ──────────────────────────────────────────
-//   async function startRecording() {
-//     try {
-//       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-//       mediaRecorderRef.current = new MediaRecorder(stream);
-//       audioChunksRef.current = [];
-
-//       mediaRecorderRef.current.ondataavailable = (e) => {
-//         if (e.data.size > 0) {
-//           audioChunksRef.current.push(e.data);
-//         }
-//       };
-
-//       mediaRecorderRef.current.onstop = () => {
-//         const blob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-//         const file = new File([blob], "query.wav", { type: "audio/wav" });
-//         setAudioFile(file);
-//         stream.getTracks().forEach((track) => track.stop());
-//         mediaRecorderRef.current = null;
-//       };
-
-//       mediaRecorderRef.current.start();
-//       setRecording(true);
-//     } catch (error) {
-//       console.error("Microphone access error:", error);
-//       alert("Could not access microphone. Please check permissions.");
-//     }
-//   }
-
-//   function stopRecording() {
-//     if (mediaRecorderRef.current && recording) {
-//       mediaRecorderRef.current.stop();
-//       setRecording(false);
-//     }
-//   }
-
-//   // ── Image Upload ─────────────────────────────────────────────
-//   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const file = e.target.files?.[0];
-//     if (file) {
-//       setImageFile(file);
-//       const reader = new FileReader();
-//       reader.onload = (e) => setImagePreview(e.target?.result as string);
-//       reader.readAsDataURL(file);
-//     }
-//   };
-
-//   const removeImage = () => {
-//     setImageFile(null);
-//     setImagePreview(null);
-//     if (fileInputRef.current) fileInputRef.current.value = "";
-//   };
-
-//   const removeAudio = () => {
-//     setAudioFile(null);
-//   };
-
-//   // ── Submit ───────────────────────────────────────────────────
-//   const handleSubmit = (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (query.trim() || imageFile || audioFile) {
-//       onSearch({ query: query.trim(), image: imageFile, audio: audioFile });
-//     }
-//   };
-
-//   // Active inputs indicator
-//   const activeInputs = [
-//     query.trim() && "text",
-//     imageFile && "image",
-//     audioFile && "voice",
-//   ].filter(Boolean);
-
-//   return (
-//     <div className="w-full max-w-4xl mx-auto">
-//       <form onSubmit={handleSubmit} className="space-y-4">
-
-//         {/* Attachments Preview */}
-//         {(imageFile || audioFile) && (
-//           <div className="flex flex-wrap gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-//             {imageFile && imagePreview && (
-//               <div className="flex items-center gap-2 bg-white rounded-lg p-2 border border-gray-300 shadow-sm">
-//                 <img
-//                   src={imagePreview}
-//                   alt="Preview"
-//                   className="w-12 h-12 object-cover rounded"
-//                 />
-//                 <div className="flex flex-col min-w-0">
-//                   <span className="text-sm font-medium truncate max-w-[150px]">
-//                     {imageFile.name}
-//                   </span>
-//                   <span className="text-xs text-gray-500">
-//                     {Math.round(imageFile.size / 1024)}KB
-//                   </span>
-//                 </div>
-//                 <button
-//                   type="button"
-//                   onClick={removeImage}
-//                   className="ml-2 text-red-500 hover:text-red-700 font-bold text-lg leading-none"
-//                   title="Remove image"
-//                 >
-//                   ×
-//                 </button>
-//               </div>
-//             )}
-
-//             {audioFile && (
-//               <div className="flex items-center gap-2 bg-white rounded-lg p-2 border border-green-300 shadow-sm">
-//                 <div className="w-12 h-12 bg-green-100 rounded flex items-center justify-center text-2xl">
-//                   🎤
-//                 </div>
-//                 <div className="flex flex-col">
-//                   <span className="text-sm font-medium">Voice Recording</span>
-//                   <span className="text-xs text-gray-500">
-//                     {Math.round(audioFile.size / 1024)}KB — ready to search
-//                   </span>
-//                 </div>
-//                 <button
-//                   type="button"
-//                   onClick={removeAudio}
-//                   className="ml-2 text-red-500 hover:text-red-700 font-bold text-lg leading-none"
-//                   title="Remove audio"
-//                 >
-//                   ×
-//                 </button>
-//               </div>
-//             )}
-//           </div>
-//         )}
-
-//         {/* Combined mode indicator */}
-//         {activeInputs.length > 1 && (
-//           <div className="flex justify-center">
-//             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
-//               ✨ Combined search: {activeInputs.join(" + ")}
-//             </span>
-//           </div>
-//         )}
-
-//         {/* Main Input Bar */}
-//         <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm hover:border-blue-300 focus-within:border-blue-500 transition-colors">
-//           <div className="flex items-center gap-2 p-4">
-//             <input
-//               value={query}
-//               onChange={(e) => setQuery(e.target.value)}
-//               placeholder='Search with text, image, voice, or all three... (e.g. "red sofa")'
-//               className="flex-1 border-0 bg-transparent text-base outline-none placeholder:text-gray-400"
-//               disabled={loading}
-//             />
-
-//             {/* Image Upload Button */}
-//             <input
-//               ref={fileInputRef}
-//               type="file"
-//               accept="image/*"
-//               onChange={handleImageUpload}
-//               className="hidden"
-//             />
-//             <button
-//               type="button"
-//               onClick={() => fileInputRef.current?.click()}
-//               className={`p-2 rounded-lg transition-colors text-xl ${
-//                 imageFile
-//                   ? "bg-blue-100 text-blue-600"
-//                   : "hover:bg-gray-100"
-//               }`}
-//               title={imageFile ? "Image attached" : "Upload image"}
-//               disabled={loading}
-//             >
-//               📷
-//             </button>
-
-//             {/* Voice Recording Button */}
-//             {!recording ? (
-//               <button
-//                 type="button"
-//                 onClick={startRecording}
-//                 className={`p-2 rounded-lg transition-colors text-xl ${
-//                   audioFile
-//                     ? "bg-green-100 text-green-600"
-//                     : "hover:bg-green-50"
-//                 }`}
-//                 title={audioFile ? "Voice recorded — click to re-record" : "Start voice recording"}
-//                 disabled={loading}
-//               >
-//                 🎤
-//               </button>
-//             ) : (
-//               <button
-//                 type="button"
-//                 onClick={stopRecording}
-//                 className="p-2 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-xl animate-pulse"
-//                 title="Stop recording"
-//               >
-//                 ⏹️
-//               </button>
-//             )}
-
-//             {/* Search Button */}
-//             <button
-//               type="submit"
-//               disabled={loading || (!query.trim() && !imageFile && !audioFile)}
-//               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium whitespace-nowrap"
-//             >
-//               {loading ? (
-//                 <span className="flex items-center gap-2">
-//                   <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-//                   Searching...
-//                 </span>
-//               ) : (
-//                 "Search"
-//               )}
-//             </button>
-//           </div>
-
-//           {/* Recording Status Bar */}
-//           {recording && (
-//             <div className="px-4 pb-3 flex items-center gap-2 border-t border-gray-100 pt-2">
-//               <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-//               <span className="text-sm text-red-600 font-medium">
-//                 Recording... Click ⏹️ to finish and attach
-//               </span>
-//             </div>
-//           )}
-
-//           {/* Helper hint */}
-//           {!recording && (
-//             <div className="px-4 pb-3 flex items-center gap-4 text-xs text-gray-400">
-//               <span>📝 Type to search</span>
-//               <span>📷 Upload image</span>
-//               <span>🎤 Record voice</span>
-//               <span className="text-purple-400 font-medium">✨ Combine any!</span>
-//             </div>
-//           )}
-//         </div>
-//       </form>
 //     </div>
 //   );
 // }
@@ -260,10 +10,10 @@ import { useState, useRef, useImperativeHandle, forwardRef } from "react";
 
 export function UnifiedSearchInput({ onSearch, loading }: any) {
   const [query, setQuery]               = useState("");
-  const [imageFile, setImageFile]       = useState<File | null>(null);
+  const [imageFiles, setImageFiles]     = useState<File[]>([]);
   const [audioFile, setAudioFile]       = useState<File | null>(null);
   const [recording, setRecording]       = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [audioLabel, setAudioLabel]     = useState<string>("");
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -346,22 +96,31 @@ export function UnifiedSearchInput({ onSearch, loading }: any) {
 
   // ── Image ────────────────────────────────────────────────────
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = ev => setImagePreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setImageFiles(prev => [...prev, ...files]);
+    
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        setImagePreviews(prev => [...prev, ev.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const removeImage = () => { setImageFile(null); setImagePreview(null); if (fileInputRef.current) fileInputRef.current.value = ""; };
+  const removeImage = (index: number) => { 
+    setImageFiles(prev => prev.filter((_, i) => i !== index)); 
+    setImagePreviews(prev => prev.filter((_, i) => i !== index)); 
+    if (fileInputRef.current && imageFiles.length === 1) fileInputRef.current.value = ""; 
+  };
   const removeAudio = () => { setAudioFile(null); setAudioLabel(""); };
 
   // ── Clear everything after submit ────────────────────────────
   function clearAll() {
     setQuery("");
-    setImageFile(null);
-    setImagePreview(null);
+    setImageFiles([]);
+    setImagePreviews([]);
     setAudioFile(null);
     setAudioLabel("");
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -370,10 +129,10 @@ export function UnifiedSearchInput({ onSearch, loading }: any) {
   // ── Submit ───────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim() && !imageFile && !audioFile) return;
+    if (!query.trim() && imageFiles.length === 0 && !audioFile) return;
 
     // Capture current values before clearing
-    const submitData = { query: query.trim(), image: imageFile, audio: audioFile };
+    const submitData = { query: query.trim(), images: imageFiles, audio: audioFile };
 
     // Clear inputs immediately so UI feels responsive
     clearAll();
@@ -382,25 +141,25 @@ export function UnifiedSearchInput({ onSearch, loading }: any) {
     onSearch(submitData);
   };
 
-  const activeInputs = [query.trim() && "text", imageFile && "image", audioFile && "voice"].filter(Boolean);
+  const activeInputs = [query.trim() && "text", imageFiles.length > 0 && "image", audioFile && "voice"].filter(Boolean);
 
   return (
     <div className="w-full">
       <form onSubmit={handleSubmit} className="space-y-3">
 
         {/* Attachments */}
-        {(imageFile || audioFile) && (
+        {(imageFiles.length > 0 || audioFile) && (
           <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-xl border border-gray-200">
-            {imageFile && imagePreview && (
-              <div className="flex items-center gap-2 bg-white rounded-lg p-2 border border-gray-200 shadow-sm">
-                <img src={imagePreview} alt="Preview" className="w-10 h-10 object-cover rounded" />
+            {imageFiles.map((file, i) => (
+              <div key={i} className="flex items-center gap-2 bg-white rounded-lg p-2 border border-gray-200 shadow-sm">
+                {imagePreviews[i] && <img src={imagePreviews[i]} alt="Preview" className="w-10 h-10 object-cover rounded" />}
                 <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-medium truncate max-w-[120px]">{imageFile.name}</span>
-                  <span className="text-xs text-gray-400">{Math.round(imageFile.size / 1024)}KB</span>
+                  <span className="text-xs font-medium truncate max-w-[120px]">{file.name}</span>
+                  <span className="text-xs text-gray-400">{Math.round(file.size / 1024)}KB</span>
                 </div>
-                <button type="button" onClick={removeImage} className="text-red-400 hover:text-red-600 font-bold ml-1">×</button>
+                <button type="button" onClick={() => removeImage(i)} className="text-red-400 hover:text-red-600 font-bold ml-1">×</button>
               </div>
-            )}
+            ))}
             {audioFile && (
               <div className="flex items-center gap-2 bg-white rounded-lg p-2 border border-green-200 shadow-sm">
                 <div className="w-10 h-10 bg-green-100 rounded flex items-center justify-center text-xl">🎤</div>
@@ -434,9 +193,9 @@ export function UnifiedSearchInput({ onSearch, loading }: any) {
               disabled={loading}
             />
 
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+            <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
             <button type="button" onClick={() => fileInputRef.current?.click()} disabled={loading}
-                    className={`p-1.5 rounded-lg text-lg transition-colors ${imageFile ? "bg-blue-100" : "hover:bg-gray-100"}`}
+                    className={`p-1.5 rounded-lg text-lg transition-colors ${imageFiles.length > 0 ? "bg-blue-100" : "hover:bg-gray-100"}`}
                     title="Upload image">📷</button>
 
             {!recording ? (
@@ -449,7 +208,7 @@ export function UnifiedSearchInput({ onSearch, loading }: any) {
             )}
 
             <button type="submit"
-                    disabled={loading || (!query.trim() && !imageFile && !audioFile)}
+                    disabled={loading || (!query.trim() && imageFiles.length === 0 && !audioFile)}
                     className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-40 transition-colors text-sm font-medium whitespace-nowrap">
               {loading ? (
                 <span className="flex items-center gap-1.5">

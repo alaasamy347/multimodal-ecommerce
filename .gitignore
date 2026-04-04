@@ -36,3 +36,9 @@ frontend/out/
 # --- Logs ---
 *.log
 npm-debug.log*
+
+.specify/
+read_docx.py
+read_pdf.py
+Alaa-Samy.docx
+Unified Multimodal Architecture for Enhanced E-Commerce Product Discovery-proposal.pdf

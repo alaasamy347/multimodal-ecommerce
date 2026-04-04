@@ -9,9 +9,29 @@ interface Props {
 }
 
 export function CartDrawer({ open, onClose, onCheckout }: Props) {
-    const { items, removeItem, updateQty, totalItems, totalPrice } = useCart();
+    const { items, removeItem, updateQty, totalItems, totalPrice, sessionId, clearCart } = useCart();
 
-    return (
+    const handleCheckoutRequested = async () => {
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+            const res = await fetch(`${apiUrl}/checkout/order?session_id=${sessionId}`, {
+                method: "POST"
+            });
+            if (res.ok) {
+                const data = await res.json();
+                console.log("Order placed:", data.order_id);
+                // clearCart(); // Keep local items for now to show on confirmation page if needed, or clear it.
+                onCheckout();
+            } else {
+                alert("Checkout failed. Please try again.");
+            }
+        } catch (err) {
+            console.error("Checkout error:", err);
+            alert("Network error during checkout.");
+        }
+    };
+
+    return(
         <>
             {/* Backdrop */}
             {open && (
@@ -102,7 +122,7 @@ export function CartDrawer({ open, onClose, onCheckout }: Props) {
                             </div>
                         </div>
 
-                        <button onClick={onCheckout}
+                        <button onClick={handleCheckoutRequested}
                             className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95">
                             Proceed to Checkout →
                         </button>
