@@ -92,14 +92,14 @@ export function SearchCard({
           </div>
 
           {/* AR Badge */}
-          {has_3d_model && model_url && (
+          {/* {has_3d_model && model_url && (
             <div className="absolute top-3 left-3">
               <div className="px-2 py-1 bg-purple-500/90 text-white rounded-full text-xs font-bold backdrop-blur-md border border-purple-300 flex items-center gap-1">
                 <Square className="w-3 h-3" />
                 AR
               </div>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Info */}

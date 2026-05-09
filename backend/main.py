@@ -145,34 +145,34 @@ def _extract_color(text: str) -> Optional[str]:
     return None
 
 def _matches_color(product: dict, color: str) -> bool:
-    """Check if product matches requested color"""
+    """Check if product matches requested color (General for all colors)"""
     if not color:
         return True
     
-    c = color.lower()
-    pclr = product.get("baseColour", "").lower()
+    c = color.lower().strip()
+    pclr = product.get("baseColour", "").lower().strip()
     pnam = product.get("productDisplayName", "").lower()
     
-    # Exact color match
-    if c == pclr or c in pclr or c in pnam:
+    # 1. Exact match
+    if pclr == c or c in pnam:
         return True
-    
-    # Gray/grey equivalence
-    if c in ["gray", "grey"]:
-        return "gray" in pclr or "grey" in pclr or "gray" in pnam or "grey" in pnam
-    
-    # Color opposites - reject
-    opposites = {
-        "black": ["white", "light", "cream", "ivory"],
-        "white": ["black", "dark"],
-        "red": ["blue", "green"],
-        "blue": ["red", "orange", "yellow"],
-    }
-    if c in opposites:
-        if any(o in pclr or o in pnam for o in opposites[c]):
-            return False
-    
-    # Don't match if color is not explicitly in product
+        
+    # 2. Synonym/Family match (General for all colors in _COLORS)
+    # Check if the requested color is a family name
+    if c in _COLORS:
+        if pclr in _COLORS[c] or any(v in pnam for v in _COLORS[c]):
+            return True
+            
+    # Check if the product color belongs to the requested color family
+    for family, variants in _COLORS.items():
+        if c == family or c in variants:
+            if pclr == family or pclr in variants:
+                return True
+
+    # 3. Handle missing product color
+    if not pclr:
+        return True # Allow if unknown
+        
     return False
 
 def _correct_spelling(text: str) -> str:
@@ -413,6 +413,7 @@ def _do_search(
     color: Optional[str],
     top_k: int,
     session_id: str,
+    category: Optional[str] = None,
 ) -> tuple[list, dict]:
     """
     Execute multimodal search
@@ -469,13 +470,26 @@ def _do_search(
     if not vecs:
         return [], metadata
     
-    # COMBINE EMBEDDINGS
-    combined = np.mean(vecs, axis=0, keepdims=True).astype("float32")
+    # COMBINE EMBEDDINGS (Weighted)
+    if len(vecs) > 1 and query.strip():
+        # If the query is long/complex, give image more weight to preserve visual style
+        # If it's short (like "red sofa"), text gets more weight to enforce the constraint
+        text_weight = 0.5 if len(query.split()) > 3 else 0.7
+        img_weight = 1.0 - text_weight
+        
+        text_vec = vecs[0]
+        img_vecs = vecs[1:]
+        img_avg = np.mean(img_vecs, axis=0)
+        combined = (text_weight * text_vec + img_weight * img_avg).reshape(1, -1).astype("float32")
+    else:
+        combined = np.mean(vecs, axis=0, keepdims=True).astype("float32")
+    
     combined /= np.linalg.norm(combined, axis=1, keepdims=True)
     metadata["combined_modalities"] = "+".join(metadata["modalities"])
     
     # RETRIEVE
-    index = _image_index if (img_paths and not query.strip()) else _text_index
+    # Use image index if image provided (for visual similarity), otherwise text index
+    index = _image_index if img_paths else _text_index
     dists, idxs = index.search(combined, top_k * 6)
     
     results = []
@@ -484,17 +498,38 @@ def _do_search(
             continue
         product = _products[int(_id_map[int(idx)])]
         
-        # COLOR FILTER
-        if color and not _matches_color(product, color):
-            continue
+        # COLOR FILTER (Soft)
+        color_match = _matches_color(product, color) if color else True
+        final_score = float(dist)
         
-        score = float(dist)
+        # If color doesn't match, apply penalty but don't skip yet
+        # This allows showing 'similar' items if exact colors aren't found
+        if not color_match:
+            final_score -= 0.15
+        
+        # CATEGORY BOOST: 
+        # 1. Direct mention in text
+        # 2. Detected by VLM from image
+        target_category = (category or "").lower()
+        prod_cat = (product.get("subCategory") or "").lower()
+        
+        if target_category and target_category in prod_cat:
+            final_score += 0.2 # Significant boost for matching the VLM's identified category
+        elif "sofa" in query.lower() and prod_cat == "sofa":
+            final_score += 0.1
+        elif "bed" in query.lower() and prod_cat == "bed":
+            final_score += 0.1
+        elif "table" in query.lower() and prod_cat == "table":
+            final_score += 0.1
+            
         results.append({
-            **_make_result(product, score),
-            "embedding_distance": score,
+            **_make_result(product, final_score),
+            "embedding_distance": float(dist),
+            "color_match": color_match,
+            "category_boosted": bool(target_category and target_category in prod_cat)
         })
         
-        if len(results) >= top_k:
+        if len(results) >= top_k * 2: # Get more results for sorting
             break
     
     results_sorted = sorted(results, key=lambda x: x["score"], reverse=True)
@@ -602,10 +637,17 @@ def root():
     }
 
 import uuid
+@app.post("/checkout/cart/add/{product_id}")
+async def add_to_cart(product_id: int, session_id: str):
+    """Mock cart sync endpoint"""
+    print(f"[CART] Session {session_id} added product {product_id}")
+    return {"status": "success", "session_id": session_id}
+
 @app.post("/checkout/order")
 async def checkout_order(session_id: str):
     """Mock checkout order generator so the frontend can complete purchases"""
     order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
+    print(f"[CHECKOUT] Session {session_id} completed order {order_id}")
     return {"order_id": order_id, "status": "success"}
 
 
@@ -826,7 +868,7 @@ async def search(
 
     # EXECUTE SEARCH
     try:
-        results, metadata = await loop.run_in_executor(
+        results_sorted, metadata = await loop.run_in_executor(
             None,
             _do_search,
             final_query,
@@ -834,6 +876,7 @@ async def search(
             color_filter,
             top_k,
             session_id,
+            vlm_result.get("category"),
         )
         if vlm_result:
             metadata["vlm_reasoning"] = vlm_result
@@ -858,6 +901,18 @@ async def search(
     
     search_mode = " + ".join(modes) if modes else "unknown"
     
+    # BUILD AI SUMMARY
+    ai_summary = None
+    if vlm_result and isinstance(vlm_result, dict):
+        reasoning = vlm_result.get("reasoning")
+        cat = vlm_result.get("category")
+        col = vlm_result.get("color")
+        
+        if reasoning and str(reasoning).lower() != "undefined":
+            ai_summary = reasoning
+        elif cat:
+            ai_summary = f"I've identified the item in your image as a {col or ''} {cat}. Searching for similar items..."
+
     return {
         "query": final_query,
         "interpreted_query": final_query,
@@ -865,11 +920,12 @@ async def search(
         "voice_query": voice_query,
         "voice_error": voice_error,
         "corrected_query": metadata.get("corrected_query"),
-        "accurate_results": results,
-        "related_results": [],
-        "total_results": len(results),
+        "accurate_results": results_sorted[:top_k],
+        "related_results": results_sorted[top_k:top_k*2],
+        "total_results": len(results_sorted),
         "color_filter": color_filter,
         "search_mode": search_mode,
+        "ai_summary": ai_summary,
         "metadata": metadata,
         "session_id": session_id,
         "timestamp": datetime.now().isoformat(),

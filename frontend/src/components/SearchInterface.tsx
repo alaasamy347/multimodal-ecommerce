@@ -109,52 +109,49 @@ function generateAISummary(
   // Voice error handling
   if (ve && ve.toLowerCase().includes("noise")) {
     return q
-      ? `I caught background audio that wasn't a search query — I ignored it. I used your text "${q}" instead and found ${count} result${count !== 1 ? "s" : ""}.`
-      : `I caught background audio that wasn't a search query. Try speaking closer to your mic, or type below.`;
+      ? `I noticed some background noise in your voice recording, so I used your text "${q}" instead. Found ${count} result${count !== 1 ? "s" : ""} for you.`
+      : `I heard some background noise but couldn't quite catch your search. Could you try speaking again or typing your request?`;
   }
 
   const topScore = results?.[0] ? Math.round((results[0].score ?? 0) * 100) : 0;
-  const lowConf = count > 0 && topScore < 65;
+  const lowConf = count > 0 && topScore < 60;
+  const colorMatches = results.filter(r => r.color?.toLowerCase() === cf?.toLowerCase()).length;
 
-  // No results
+  // No results at all
   if (count === 0) {
-    const tip = cf
-      ? `Try removing the color filter, or use a broader term like "sofa" or "chair".`
-      : `I couldn't find an exact match. Check your spelling, or try a more common term — like "wardrobe" instead of "wardobe". You can also upload a photo.`;
-    return `I searched for "${label}" but couldn't find any matching items in the catalog. ${tip}`;
+    if (cf) {
+      return `I searched for "${label}" but I couldn't find any items in ${cf}. Try removing the color filter or searching for a different style.`;
+    }
+    return `I couldn't find any items matching "${label}". Try using broader terms like "sofa" or "chair", or upload a photo of what you're looking for.`;
   }
 
-  // Low confidence results
-  if (lowConf) {
-    return `I searched for "${label}" but the catalog doesn't have a strong match. The closest items are shown below, but they may not be exactly right. Try rephrasing — like "wardrobe", "closet", or "storage cabinet" — or upload a photo of what you have in mind.`;
-  }
-
-  // Build response
+  // Build response parts
   const parts: string[] = [];
   
   if (vq && q) {
-    parts.push(`I combined your voice "${vq}" with your text "${q}".`);
+    parts.push(`I've combined your voice request for "${vq}" with your text "${q}".`);
   } else if (vq) {
-    parts.push(`I heard "${vq}" from your voice recording.`);
+    parts.push(`I heard you looking for "${vq}".`);
   } else if (hasImage && q) {
-    parts.push(`I matched your image with the description "${q}".`);
+    parts.push(`I've analyzed your image and matched it with the description "${q}".`);
   } else if (hasImage) {
-    parts.push(`I searched for items visually similar to your image.`);
+    parts.push(`I've found items that are visually similar to your photo.`);
   } else {
-    parts.push(`I searched for "${q}".`);
+    parts.push(`I found several matches for "${q}".`);
   }
 
-  if (corrected && corrected !== q) {
-    parts.push(`(auto-corrected "${q}" to "${corrected}")`);
+  if (cf) {
+    if (colorMatches === 0) {
+      parts.push(`I couldn't find any items exactly in ${cf}, so I'm showing you the most similar styles in other colors.`);
+    } else {
+      parts.push(`I've prioritized items in ${cf} for you.`);
+    }
   }
 
-  const colorNote = cf ? ` in ${cf}` : "";
-  if (count >= 15) {
-    parts.push(`Found ${count} strong matches${colorNote} — here are the best ones.`);
-  } else if (count >= 5) {
-    parts.push(`Found ${count} good results${colorNote} for you.`);
+  if (lowConf) {
+    parts.push(`The matches aren't perfect, but these are the closest items in our catalog.`);
   } else {
-    parts.push(`Found ${count} result${count > 1 ? "s" : ""}${colorNote}.`);
+    parts.push(`Here are the best matches I found.`);
   }
 
   return parts.join(" ");

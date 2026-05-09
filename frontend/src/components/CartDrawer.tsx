@@ -14,20 +14,22 @@ export function CartDrawer({ open, onClose, onCheckout }: Props) {
     const handleCheckoutRequested = async () => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+            console.log(`[CHECKOUT] Starting checkout for session ${sessionId}...`);
             const res = await fetch(`${apiUrl}/checkout/order?session_id=${sessionId}`, {
                 method: "POST"
             });
             if (res.ok) {
                 const data = await res.json();
-                console.log("Order placed:", data.order_id);
-                // clearCart(); // Keep local items for now to show on confirmation page if needed, or clear it.
+                console.log("[CHECKOUT] Order placed successfully:", data.order_id);
                 onCheckout();
             } else {
-                alert("Checkout failed. Please try again.");
+                const errorText = await res.text();
+                console.error("[CHECKOUT] Server returned error:", errorText);
+                alert(`Checkout failed (${res.status}). Please try again.`);
             }
         } catch (err) {
-            console.error("Checkout error:", err);
-            alert("Network error during checkout.");
+            console.error("[CHECKOUT] Network/Fetch error:", err);
+            alert("Network error during checkout. Please check if the backend is running.");
         }
     };
 
